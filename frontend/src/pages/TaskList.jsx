@@ -3,13 +3,15 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://task-manager-backend-miw9.onrender.com/api";
+
 const TaskList = () => {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/tasks");
+        const response = await axios.get(`${API_BASE_URL}/tasks`, { withCredentials: true });
         setTasks(response.data);
       } catch (error) {
         console.error("Error fetching tasks", error);
@@ -21,8 +23,8 @@ const TaskList = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/tasks/${id}`);
-      setTasks(tasks.filter((task) => task._id !== id));
+      await axios.delete(`${API_BASE_URL}/tasks/${id}`, { withCredentials: true });
+      setTasks((prev) => prev.filter((task) => task._id !== id));
     } catch (error) {
       console.error("Error deleting task", error);
     }
