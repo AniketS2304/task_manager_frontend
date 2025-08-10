@@ -1,37 +1,34 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Import useNavigate
-import axios from "axios"; // ✅ Import axios
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://task-manager-backend-miw9.onrender.com/api";
 
 const SignUp = () => {
-  const navigate = useNavigate(); // ✅ Initialize navigate function
+  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // ✅ State to handle errors
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ Basic validation
     if (!name || !email || !password) {
       setError("All fields are required!");
       return;
     }
 
     try {
-      // ✅ API call to register user
-      const response = await axios.post("http://localhost:5000/api/auth/signup", {
-        name,
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/signup`,
+        { name, email, password },
+        { withCredentials: true }
+      );
 
       console.log("Signup successful:", response.data);
-
-      // ✅ Redirect user to login page after successful signup
       navigate("/login");
-
     } catch (err) {
       console.error("Signup error:", err.response ? err.response.data : err.message);
       setError(err.response?.data?.message || "Signup failed. Please try again.");
@@ -43,7 +40,7 @@ const SignUp = () => {
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
         <h1 className="text-3xl font-bold text-center mb-6">Sign Up</h1>
 
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>} {/* ✅ Show error message */}
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
