@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import api from "../axios"; // <-- import your preconfigured axios instance
 
 const EditTask = () => {
   const { id } = useParams();
@@ -12,15 +12,13 @@ const EditTask = () => {
   useEffect(() => {
     const fetchTask = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/tasks/${id}`);
-        if (response.data.title && response.data.description) {
-          setTask({
-            title: response.data.title,
-            description: response.data.description,
-          });
-        } else if (response.data.task) {
-          // In case API sends { task: { title: "...", description: "..." } }
-          setTask(response.data.task);
+        const { data } = await api.get(`/tasks/${id}`);
+        
+        // Handle both flat object and nested "task" object formats
+        if (data?.title && data?.description) {
+          setTask({ title: data.title, description: data.description });
+        } else if (data?.task) {
+          setTask(data.task);
         } else {
           setError("Task data is in unexpected format.");
         }
@@ -43,7 +41,7 @@ const EditTask = () => {
     e.preventDefault();
     setError("");
     try {
-      await axios.put(`http://localhost:5000/api/tasks/${id}`, task);
+      await api.put(`/tasks/${id}`, task);
       navigate("/tasks");
     } catch (err) {
       console.error("Error updating task:", err);
@@ -103,18 +101,3 @@ const EditTask = () => {
 };
 
 export default EditTask;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
