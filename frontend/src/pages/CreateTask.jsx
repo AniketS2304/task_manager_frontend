@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from "../axios"; // ✅ Import central axios instance
 
 const CreateTask = () => {
   const navigate = useNavigate();
@@ -20,37 +20,23 @@ const CreateTask = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/tasks`,
-        task,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      if (response.status === 201 || response.status === 200) {
-        console.log("✅ Task created:", response.data);
-        navigate("/dashboard");
-      } else {
-        console.error("⚠ Unexpected response:", response);
+      const { status, data } = await api.post("/tasks", task);
+      if (status === 201 || status === 200) {
+        console.log("✅ Task created:", data);
+        navigate("/dashboard"); // Or "/tasks" if that's your task list route
       }
     } catch (error) {
-      console.error(
-        "❌ Error creating task:",
-        error.response?.data || error.message
-      );
+      console.error("❌ Error creating task:", error.response?.data || error.message);
     }
   };
 
   return (
     <div className="max-w-lg mx-auto my-10 p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-center mb-4">
-        Create a New Task
-      </h2>
+      <h2 className="text-2xl font-semibold text-center mb-4">Create a New Task</h2>
       <form onSubmit={handleSubmit}>
+        {/* Title */}
         <div className="mb-4">
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
             Title
           </label>
           <input
@@ -65,11 +51,9 @@ const CreateTask = () => {
           />
         </div>
 
+        {/* Description */}
         <div className="mb-4">
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
           <textarea
@@ -84,11 +68,9 @@ const CreateTask = () => {
           />
         </div>
 
+        {/* Due Date */}
         <div className="mb-4">
-          <label
-            htmlFor="dueDate"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
+          <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
             Due Date
           </label>
           <input
@@ -102,6 +84,7 @@ const CreateTask = () => {
           />
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
