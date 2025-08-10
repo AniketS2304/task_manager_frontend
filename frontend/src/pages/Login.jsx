@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL; // ✅ Environment-based URL
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,26 +24,22 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/login", // Change if backend URL differs
+        `${API_URL}/auth/login`,
         { email, password },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" }, withCredentials: true } // ✅ withCredentials for auth cookies
       );
 
       console.log("Login successful", response.data);
 
-      // Redirect after login
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
 
       if (err.response) {
-        // Backend responded with a status code outside 2xx
         setError(err.response.data.message || "Invalid credentials.");
       } else if (err.request) {
-        // No response from backend
         setError("Could not connect to server. Check if backend is running.");
       } else {
-        // Something else went wrong
         setError("An unexpected error occurred.");
       }
     } finally {
