@@ -4,8 +4,10 @@ import axios from "axios";
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
-  const API_URL = import.meta.env.VITE_API_URL; // No localhost fallback
 
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  // Fetch tasks from backend
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -17,8 +19,9 @@ const Dashboard = () => {
     };
 
     fetchTasks();
-  }, [API_URL]);
+  }, []);
 
+  // Delete a task
   const handleDelete = async (taskId) => {
     try {
       const response = await axios.delete(`${API_URL}/api/tasks/${taskId}`);
@@ -30,6 +33,7 @@ const Dashboard = () => {
     }
   };
 
+  // Mark task as completed
   const handleComplete = async (taskId) => {
     try {
       const response = await axios.patch(`${API_URL}/api/tasks/${taskId}`, {
@@ -37,9 +41,11 @@ const Dashboard = () => {
       });
 
       if (response.status === 200) {
-        setTasks(tasks.map((task) => 
-          task._id === taskId ? { ...task, status: "Completed" } : task
-        ));
+        setTasks(
+          tasks.map((task) =>
+            task._id === taskId ? { ...task, status: "Completed" } : task
+          )
+        );
       }
     } catch (error) {
       console.error("Error marking task as completed:", error.message);
@@ -49,8 +55,10 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center">
       {/* Navbar */}
-      <div className="w-full bg-white shadow-md py-4 px-6 flex justify-between items-center fixed top-0">
-        <h1 className="text-3xl font-bold text-gray-700 tracking-wide">Task Manager</h1>
+      <div className="w-full bg-white shadow-md py-4 px-6 flex justify-between items-center fixed top-0 z-50">
+        <h1 className="text-3xl font-bold text-gray-700 tracking-wide">
+          Task Manager
+        </h1>
         <Link to="/tasks/create">
           <button className="px-5 py-2 bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all">
             + Add Task
@@ -63,9 +71,21 @@ const Dashboard = () => {
         {/* Task Overview */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { title: "Total Tasks", count: tasks.length, gradient: "from-blue-400 to-blue-600" },
-            { title: "Pending Tasks", count: tasks.filter(task => task.status === "Pending").length, gradient: "from-yellow-400 to-yellow-600" },
-            { title: "Completed Tasks", count: tasks.filter(task => task.status === "Completed").length, gradient: "from-green-400 to-green-600" }
+            {
+              title: "Total Tasks",
+              count: tasks.length,
+              gradient: "from-blue-400 to-blue-600",
+            },
+            {
+              title: "Pending Tasks",
+              count: tasks.filter((task) => task.status === "Pending").length,
+              gradient: "from-yellow-400 to-yellow-600",
+            },
+            {
+              title: "Completed Tasks",
+              count: tasks.filter((task) => task.status === "Completed").length,
+              gradient: "from-green-400 to-green-600",
+            },
           ].map((stat, index) => (
             <div
               key={index}
@@ -79,7 +99,9 @@ const Dashboard = () => {
 
         {/* Task List */}
         <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-700">Your Tasks</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+            Your Tasks
+          </h2>
           <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
             <table className="w-full bg-opacity-70 backdrop-blur-lg rounded-lg">
               <thead className="bg-gray-100 text-gray-600">
@@ -92,14 +114,23 @@ const Dashboard = () => {
               <tbody>
                 {tasks.length > 0 ? (
                   tasks.map((task) => (
-                    <tr key={task._id} className="border-b hover:bg-gray-100 transition">
+                    <tr
+                      key={task._id}
+                      className="border-b hover:bg-gray-100 transition"
+                    >
                       <td className="p-4">{task.title}</td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 text-sm rounded-full ${task.status === "Completed" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                        <span
+                          className={`px-3 py-1 text-sm rounded-full ${
+                            task.status === "Completed"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
                           {task.status}
                         </span>
                       </td>
-                      <td className="p-4 flex gap-2">
+                      <td className="p-4 flex gap-2 flex-wrap">
                         <Link to={`/tasks/edit/${task._id}`}>
                           <button className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition transform hover:scale-105">
                             Edit
@@ -124,7 +155,10 @@ const Dashboard = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="p-6 text-center text-gray-500">
+                    <td
+                      colSpan="3"
+                      className="p-6 text-center text-gray-500"
+                    >
                       No tasks available. Start by adding one!
                     </td>
                   </tr>
