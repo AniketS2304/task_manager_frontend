@@ -2,51 +2,62 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+const api = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  withCredentials: true,
+});
+
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch tasks from backend
+  // Fetch tasks
+  const fetchTasks = async () => {
+    try {
+      const { data } = await api.get("/tasks");
+      setTasks(data || []);
+    } catch (error) {
+      console.error("Error fetching tasks:", error.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/tasks");
-        setTasks(response.data);
-      } catch (error) {
-        console.error("Error fetching tasks:", error.message);
-      }
-    };
-
     fetchTasks();
   }, []);
 
-  // Delete a task
+  // Delete task
   const handleDelete = async (taskId) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/tasks/${taskId}`);
-      if (response.status === 200) {
-        setTasks(tasks.filter((task) => task._id !== taskId));
-      }
+      await api.delete(`/tasks/${taskId}`);
+      setTasks((prev) => prev.filter((task) => task._id !== taskId));
     } catch (error) {
-      console.error("Error deleting task:", error.message);
+      console.error("Error deleting task:", error.response?.data || error.message);
     }
   };
 
-  // Mark task as completed
+  // Complete task
   const handleComplete = async (taskId) => {
     try {
-      const response = await axios.patch(`http://localhost:5000/api/tasks/${taskId}`, {
-        status: "Completed",
-      });
-
-      if (response.status === 200) {
-        setTasks(tasks.map(task => 
+      await api.patch(`/tasks/${taskId}`, { status: "Completed" });
+      setTasks((prev) =>
+        prev.map((task) =>
           task._id === taskId ? { ...task, status: "Completed" } : task
-        ));
-      }
+        )
+      );
     } catch (error) {
-      console.error("Error marking task as completed:", error.message);
+      console.error("Error marking task as completed:", error.response?.data || error.message);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Loading tasks...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center">
@@ -97,7 +108,13 @@ const Dashboard = () => {
                     <tr key={task._id} className="border-b hover:bg-gray-100 transition">
                       <td className="p-4">{task.title}</td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 text-sm rounded-full ${task.status === "Completed" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                        <span
+                          className={`px-3 py-1 text-sm rounded-full ${
+                            task.status === "Completed"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
                           {task.status}
                         </span>
                       </td>
@@ -141,3 +158,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
